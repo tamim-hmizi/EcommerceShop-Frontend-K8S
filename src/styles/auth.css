@@ -1,0 +1,203 @@
+/* Simplified Auth Styles with Reduced Animations */
+
+/* Container Styles */
+.auth-container {
+  /* Removed perspective and 3D transforms */
+}
+
+.auth-form-container {
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  position: relative;
+  /* Removed 3D transforms */
+  transition: box-shadow 0.3s ease; /* Simplified transition */
+}
+
+.auth-form-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--color-primary-rgb), 0.05) 0%,
+    rgba(var(--color-accent-3-rgb), 0.05) 100%
+  );
+  border-radius: inherit;
+  /* Removed 3D transforms */
+}
+
+.auth-form-container:hover {
+  /* Removed 3D transforms */
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Form Elements */
+.auth-input-group {
+  position: relative;
+  /* Removed 3D transforms */
+  transition: opacity 0.2s ease; /* Simplified transition */
+}
+
+.auth-input-group:focus-within {
+  /* Removed 3D transforms */
+}
+
+.auth-input {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(var(--color-border-rgb), 0.3);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  width: 100%;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease; /* Simplified transition */
+  /* Removed 3D transforms */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.2);
+  /* Removed 3D transforms */
+}
+
+.auth-label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+  transition: color 0.2s ease; /* Simplified transition */
+  /* Removed 3D transforms */
+}
+
+.auth-input-group:focus-within .auth-label {
+  color: var(--color-primary);
+  /* Removed 3D transforms */
+}
+
+/* Button Styles */
+.auth-button {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-accent-3) 100%
+  );
+  border: none;
+  border-radius: var(--radius-md);
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  text-align: center;
+  /* Removed 3D transforms */
+  transition: box-shadow 0.2s ease, transform 0.2s ease; /* Simplified transition */
+  width: 100%;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Removed button shine effect */
+
+.auth-button:hover {
+  transform: translateY(-1px); /* Reduced movement */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.auth-button:active {
+  transform: translateY(0);
+}
+
+/* Decorative Elements - Static Instead of Animated */
+.auth-decoration {
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-light) 0%,
+    var(--color-accent-3) 100%
+  );
+  opacity: 0.1;
+  filter: blur(40px);
+  z-index: -1;
+  /* Removed animation */
+}
+
+.auth-decoration-1 {
+  width: 300px;
+  height: 300px;
+  top: -150px;
+  right: -100px;
+}
+
+.auth-decoration-2 {
+  width: 200px;
+  height: 200px;
+  bottom: -100px;
+  left: -50px;
+}
+
+/* Removed float animation */
+
+/* Title Styles - Removed Shimmer Animation */
+.auth-title {
+  position: relative;
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    var(--color-primary) 0%,
+    var(--color-accent-3) 100%
+  );
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  /* Removed animation */
+  font-weight: 700;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0;
+  color: var(--color-text-light);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.auth-divider::before {
+  margin-right: 0.5rem;
+}
+
+.auth-divider::after {
+  margin-left: 0.5rem;
+}
+
+/* Simplified Success/Error States */
+.auth-input-success {
+  border-color: var(--color-success) !important;
+  /* Removed animation */
+}
+
+.auth-input-error {
+  border-color: var(--color-error) !important;
+  /* Removed animation */
+}
+
+/* Responsive Adjustments */
+@media (max-width: 640px) {
+  .auth-form-container {
+    padding: 1.5rem;
+  }
+}
