@@ -6,7 +6,7 @@ import api from './api';
  */
 export const getUserCart = async () => {
   try {
-    const res = await api.get('/cart');
+    const res = await api.get('/carts');
     return res.data;
   } catch (error) {
     console.error('Error fetching user cart:', error);
@@ -21,7 +21,7 @@ export const getUserCart = async () => {
  */
 export const saveCart = async (cartItems) => {
   try {
-    const res = await api.post('/cart', { items: cartItems });
+    const res = await api.post('/carts', { items: cartItems });
     return res.data;
   } catch (error) {
     console.error('Error saving cart:', error);
@@ -36,7 +36,7 @@ export const saveCart = async (cartItems) => {
  */
 export const addItemToCart = async (item) => {
   try {
-    const res = await api.post('/cart/items', item);
+    const res = await api.post('/carts/items', item);
     return res.data;
   } catch (error) {
     console.error('Error adding item to cart:', error);
@@ -52,7 +52,7 @@ export const addItemToCart = async (item) => {
  */
 export const updateCartItem = async (itemId, updates) => {
   try {
-    const res = await api.put(`/cart/items/${itemId}`, updates);
+    const res = await api.put(`/carts/items/${itemId}`, updates);
     return res.data;
   } catch (error) {
     console.error('Error updating cart item:', error);
@@ -67,7 +67,7 @@ export const updateCartItem = async (itemId, updates) => {
  */
 export const removeCartItem = async (itemId) => {
   try {
-    const res = await api.delete(`/cart/items/${itemId}`);
+    const res = await api.delete(`/carts/items/${itemId}`);
     return res.data;
   } catch (error) {
     console.error('Error removing cart item:', error);
@@ -81,7 +81,7 @@ export const removeCartItem = async (itemId) => {
  */
 export const clearCart = async () => {
   try {
-    const res = await api.delete('/cart');
+    const res = await api.delete('/carts');
     return res.data;
   } catch (error) {
     console.error('Error clearing cart:', error);
@@ -96,7 +96,7 @@ export const clearCart = async () => {
  */
 export const mergeGuestCart = async (guestCartItems) => {
   try {
-    const res = await api.post('/cart/merge', { items: guestCartItems });
+    const res = await api.post('/carts/merge', { items: guestCartItems });
     return res.data;
   } catch (error) {
     console.error('Error merging guest cart:', error);
