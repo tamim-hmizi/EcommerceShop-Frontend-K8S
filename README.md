@@ -60,4 +60,4 @@ docker run -p 3000:3000 ecommerceshop-frontend-k8s
 
 ---
 
-Part of the MERN e-commerce use case for QuickOps, 2025, by Tamim Hmizi — https://tamim-hmizi.github.io/Portfolio/
+Part of the MERN e-commerce use case for QuickOps, 2025, by Tamim Hmizi: https://tamim-hmizi.github.io/Portfolio/
