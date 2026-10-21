@@ -1,27 +1,19 @@
-# Stage 1: Build React App
-FROM node:22.14-alpine AS build
+# Stage 1: build the static bundle
+FROM node:22-alpine AS build
 WORKDIR /app
 
-# Install dependencies
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm ci
 
-# Copy source code and build
 COPY . .
+# Vite inlines VITE_* variables at build time
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
 RUN npm run build
 
-# Stage 2: Serve static build with a lightweight web server
-FROM node:22.14-alpine
-WORKDIR /app
-
-# Install a simple static server
-RUN npm install -g serve
-
-# Copy build from previous stage
-COPY --from=build /app/dist ./build
-
-# Expose port used by 'serve'
+# Stage 2: serve with nginx (SPA fallback, port 3000 kept for existing deployments)
+FROM nginx:stable-alpine
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 3000
-
-# Start frontend server
-CMD ["serve", "-s", "build", "-l", "3000"]
+CMD ["nginx", "-g", "daemon off;"]
