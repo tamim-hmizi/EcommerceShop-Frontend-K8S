@@ -11,15 +11,19 @@
  * @param {string} textColor - Text color (hex)
  * @returns {string} Data URL for the SVG placeholder image
  */
+const escapeXml = (value) =>
+  String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' })[char]);
+
 export const createPlaceholderImage = (text, width = 300, height = 300, bgColor = '#f3f4f6', textColor = '#6b7280') => {
   const svg = `
     <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
       <rect width="100%" height="100%" fill="${bgColor}"/>
       <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="${Math.min(width, height) * 0.2}"
-            fill="${textColor}" text-anchor="middle" dominant-baseline="middle">${text}</text>
+            fill="${textColor}" text-anchor="middle" dominant-baseline="middle">${escapeXml(text)}</text>
     </svg>
   `;
-  return `data:image/svg+xml;base64,${btoa(svg)}`;
+  // URI-encoding works for any Unicode text, unlike btoa(), which throws outside Latin-1.
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 };
 
 /**
@@ -55,7 +59,7 @@ export const constructImageUrl = (imagePath, baseUrl = null) => {
   }
 
   // Get base URL from environment or use default (without /api for static files)
-  const envBaseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || "http://localhost:5000";
+  const envBaseUrl = import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, '') || "http://localhost:5000";
   const serverBaseUrl = baseUrl || envBaseUrl;
 
   // Handle different path formats
