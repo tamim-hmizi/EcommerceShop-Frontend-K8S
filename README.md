@@ -41,6 +41,14 @@ npm run preview
 npm run lint
 ```
 
+## Tests
+
+```bash
+npm test
+```
+
+Vitest covers the image helpers (Unicode-safe, escaped placeholders, URL resolution, upload validation) and the cart reducer (stock caps, merging, persistence). CI runs them on every push and pull request.
+
 ## Docker
 
 Multi-stage image: `node:22-alpine` builds the bundle, `nginx:stable-alpine` serves it on port 3000 with an SPA fallback (`nginx.conf`).
