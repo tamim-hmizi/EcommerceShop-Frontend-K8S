@@ -15,7 +15,7 @@ import DeleteConfirmationModal from "./product/DeleteConfirmationModal";
 const AdminProductTable = ({ token }) => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [imageURLs, setImageURLs] = useState({});
   const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -75,14 +75,13 @@ const AdminProductTable = ({ token }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const fetchCategories = useCallback(async () => {
-    try {
-      const response = await getCategories(token);
-      setCategories(response.data);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-    }
-  }, [token]);
+  const fetchCategories = useCallback(
+    () =>
+      getCategories(token)
+        .then((response) => setCategories(response.data))
+        .catch((error) => console.error("Error fetching categories:", error)),
+    [token]
+  );
 
   const fetchImage = async (imagePath, productId) => {
     try {
@@ -122,31 +121,29 @@ const AdminProductTable = ({ token }) => {
     }
   };
 
-  const fetchProducts = useCallback(async (isRefreshing = false) => {
-    if (isRefreshing) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-
-    try {
-      const data = await getProducts();
-      setProducts(data);
-      data.forEach((product) => {
-        if (product.image) {
-          fetchImage(product.image, product._id);
-        }
-      });
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    }
-
-    setLoading(false);
-    setRefreshing(false);
-  }, []);
+  // State is only updated in promise callbacks, so this is safe to call from an effect
+  const fetchProducts = useCallback(
+    () =>
+      getProducts()
+        .then((data) => {
+          setProducts(data);
+          data.forEach((product) => {
+            if (product.image) {
+              fetchImage(product.image, product._id);
+            }
+          });
+        })
+        .catch((error) => console.error("Error fetching products:", error))
+        .finally(() => {
+          setLoading(false);
+          setRefreshing(false);
+        }),
+    []
+  );
 
   const handleRefresh = () => {
-    fetchProducts(true);
+    setRefreshing(true);
+    fetchProducts();
   };
 
   const handleSearch = (e) => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
@@ -18,11 +18,10 @@ import {
 function ProductList() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { products, loading: productsLoading, refreshing } = useSelector((state) => state.products);
+  const { products, loading: productsLoading } = useSelector((state) => state.products);
   const navigate = useNavigate();
 
   const [categories, setCategories] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const [activeCategory, setActiveCategory] = useState("all");
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -41,8 +40,6 @@ function ProductList() {
   useEffect(() => {
     async function fetchData() {
       try {
-        setLoading(true);
-
         // Fetch categories
         const cats = await getCategories();
         setCategories(cats.data);
@@ -50,8 +47,6 @@ function ProductList() {
         // Fetch products if not already loaded
         if (products.length === 0) {
           dispatch(fetchProducts());
-        } else {
-          setFilteredProducts(products);
         }
       } catch (err) {
         console.error("Error loading data:", err);
@@ -62,7 +57,8 @@ function ProductList() {
     fetchData();
   }, [dispatch, products.length]);
 
-  useEffect(() => {
+  // Derived from products and the active filters, no extra state needed
+  const filteredProducts = useMemo(() => {
     let filtered = [...products];
 
     // Apply category filter
@@ -105,7 +101,7 @@ function ProductList() {
         break;
     }
 
-    setFilteredProducts(filtered);
+    return filtered;
   }, [activeCategory, searchQuery, products, sortBy, priceRange]);
 
   const handleCategoryClick = (catId) => {

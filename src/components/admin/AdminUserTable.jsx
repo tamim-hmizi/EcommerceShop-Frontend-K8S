@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getUsers, deleteUser } from "../../services/UserService";
 import { useSelector } from "react-redux";
 import Loading from "../Loading";
@@ -12,30 +12,26 @@ function AdminUserTable({ token }) {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const fetchUsers = async (isRefreshing = false) => {
-    if (isRefreshing) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-
-    try {
-      const response = await getUsers(token);
-      setUsers(response.data);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+  // State is only updated in promise callbacks, so this is safe to call from an effect
+  const fetchUsers = useCallback(
+    () =>
+      getUsers(token)
+        .then((response) => setUsers(response.data))
+        .catch((error) => console.error("Error fetching users:", error))
+        .finally(() => {
+          setLoading(false);
+          setRefreshing(false);
+        }),
+    [token]
+  );
 
   useEffect(() => {
     fetchUsers();
-  }, [token]);
+  }, [fetchUsers]);
 
   const handleRefresh = () => {
-    fetchUsers(true);
+    setRefreshing(true);
+    fetchUsers();
   };
 
   const handleDelete = async (_id) => {

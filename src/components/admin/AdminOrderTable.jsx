@@ -19,7 +19,7 @@ import {
 
 function AdminOrderTable({ token }) {
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [form, setForm] = useState({
     _id: null,
@@ -38,26 +38,22 @@ function AdminOrderTable({ token }) {
   const [sortField, setSortField] = useState("createdAt");
   const [sortDirection, setSortDirection] = useState("desc");
 
-  const fetchOrders = useCallback(async (isRefreshing = false) => {
-    if (isRefreshing) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-
-    try {
-      const response = await getAllOrders(token);
-      setOrders(response.data);
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-    }
-
-    setLoading(false);
-    setRefreshing(false);
-  }, [token]);
+  // State is only updated in promise callbacks, so this is safe to call from an effect
+  const fetchOrders = useCallback(
+    () =>
+      getAllOrders(token)
+        .then((response) => setOrders(response.data))
+        .catch((error) => console.error("Error fetching orders:", error))
+        .finally(() => {
+          setLoading(false);
+          setRefreshing(false);
+        }),
+    [token]
+  );
 
   const handleRefresh = () => {
-    fetchOrders(true);
+    setRefreshing(true);
+    fetchOrders();
   };
 
   const handleSort = (field) => {

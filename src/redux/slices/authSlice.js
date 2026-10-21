@@ -51,7 +51,7 @@ export const updateUserProfile = createAsyncThunk(
         throw new Error("You must be logged in to update your profile");
       }
 
-      const response = await authService.updateProfile(userData, user.token);
+      await authService.updateProfile(userData, user.token);
 
       // Create updated user object with new data but keep the token
       const updatedUser = {
@@ -114,7 +114,7 @@ export const deleteProfilePicture = createAsyncThunk(
         throw new Error("You must be logged in to delete your profile picture");
       }
 
-      const response = await authService.deleteProfilePicture(user.token);
+      await authService.deleteProfilePicture(user.token);
 
       // Create updated user object without profile picture
       const updatedUser = {

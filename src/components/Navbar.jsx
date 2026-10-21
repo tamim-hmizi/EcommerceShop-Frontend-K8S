@@ -22,7 +22,9 @@ function Navbar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // The menu is tied to the route it was opened on, so navigating closes it
+  const [menuOpenPath, setMenuOpenPath] = useState(null);
+  const mobileMenuOpen = menuOpenPath === location.pathname;
   const [scrolled, setScrolled] = useState(false);
 
   // Check if the current path matches the link
@@ -43,14 +45,6 @@ function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  // Close mobile menu when changing routes
-  useEffect(
-    () => {
-      setMobileMenuOpen(false);
-    },
-    [location]
-  );
 
   const handleLogout = () => {
     dispatch(logoutUser());
@@ -192,7 +186,7 @@ function Navbar() {
 
             {/* Mobile Menu Button */}
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => setMenuOpenPath(mobileMenuOpen ? null : location.pathname)}
               className="btn btn-ghost btn-circle md:hidden"
             >
               {mobileMenuOpen

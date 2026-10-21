@@ -21,13 +21,23 @@ function Profile() {
   const dispatch = useDispatch();
   const { user, loading, error } = useSelector(state => state.auth);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
+  const toFormData = (u) => ({
+    name: u?.name || "",
+    email: u?.email || "",
     password: "",
     confirmPassword: "",
-    bio: ""
+    bio: u?.bio || ""
   });
+
+  const [formData, setFormData] = useState(() => toFormData(user));
+
+  // Re-initialize the form when the user object changes (adjusting state during
+  // render, as recommended instead of an effect)
+  const [formUser, setFormUser] = useState(user);
+  if (user !== formUser) {
+    setFormUser(user);
+    setFormData(toFormData(user));
+  }
 
   const [activeTab, setActiveTab] = useState("profile");
 
@@ -47,14 +57,6 @@ function Profile() {
         return;
       }
 
-      // Initialize form with user data
-      setFormData({
-        name: user.name || "",
-        email: user.email || "",
-        password: "",
-        confirmPassword: "",
-        bio: user.bio || ""
-      });
     },
     [user, navigate]
   );

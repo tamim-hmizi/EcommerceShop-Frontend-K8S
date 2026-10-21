@@ -9,22 +9,21 @@ import Loading from "../Loading";
 
 const CategoryTable = ({ token }) => {
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ _id: null, name: "", description: "" });
   const [errors, setErrors] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-  const fetchCategories = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await getCategories(token);
-      setCategories(response.data);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-    }
-    setLoading(false);
-  }, [token]);
+  // State is only updated in promise callbacks, so this is safe to call from an effect
+  const fetchCategories = useCallback(
+    () =>
+      getCategories(token)
+        .then((response) => setCategories(response.data))
+        .catch((error) => console.error("Error fetching categories:", error))
+        .finally(() => setLoading(false)),
+    [token]
+  );
 
   useEffect(() => {
     fetchCategories();

@@ -13,7 +13,6 @@ const ProfilePictureUpload = ({ className = "" }) => {
   const [dragActive, setDragActive] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState("");
 
   // Cleanup preview URLs on unmount
@@ -80,13 +79,11 @@ const ProfilePictureUpload = ({ className = "" }) => {
     if (!selectedFile) return;
 
     try {
-      setUploadProgress(0);
       await dispatch(uploadProfilePicture(selectedFile)).unwrap();
 
       // Clean up
       setSelectedFile(null);
       setPreviewUrl(null);
-      setUploadProgress(0);
 
       // Clear file input
       if (fileInputRef.current) {

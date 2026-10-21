@@ -74,119 +74,114 @@ export default function AdminDashboard() {
   });
 
   // Fetch dashboard data on component mount or when user/timeFilter changes
-  const fetchDashboardData = useCallback(async (isRefreshing = false) => {
-    try {
-      if (!isRefreshing) {
-        setLoading(true);
-      } else {
-        setRefreshing(true);
-      }
-
-      console.log("Fetching dashboard data with token:", user?.token ? "Token exists" : "No token");
-
-      const [categoriesResponse, productsResponse, ordersResponse, usersResponse] = await Promise.all([
+  // State is only updated in promise callbacks, so this is safe to call from an effect
+  const fetchDashboardData = useCallback(
+    () =>
+      Promise.all([
         getCategories(),
         getProducts(),
         getAllOrders(user?.token),
         getUsers(user?.token)
-      ]);
+      ])
+        .then(([categoriesResponse, productsResponse, ordersResponse, usersResponse]) => {
+          console.log("API Responses:", {
+            categories: categoriesResponse,
+            products: productsResponse,
+            orders: ordersResponse,
+            users: usersResponse
+          });
 
-      console.log("API Responses:", {
-        categories: categoriesResponse,
-        products: productsResponse,
-        orders: ordersResponse,
-        users: usersResponse
-      });
+          // Extract data from responses
+          const categories = categoriesResponse?.data || [];
+          const products = productsResponse || [];
+          const orders = ordersResponse?.data || [];
+          const users = usersResponse?.data || [];
 
-      // Extract data from responses
-      const categories = categoriesResponse?.data || [];
-      const products = productsResponse || [];
-      const orders = ordersResponse?.data || [];
-      const users = usersResponse?.data || [];
+          console.log("Extracted Data:", {
+            categoriesCount: categories.length,
+            productsCount: products.length,
+            ordersCount: orders.length,
+            usersCount: users.length
+          });
 
-      console.log("Extracted Data:", {
-        categoriesCount: categories.length,
-        productsCount: products.length,
-        ordersCount: orders.length,
-        usersCount: users.length
-      });
+          // Filter orders based on time period if needed
+          const filteredOrders = filterDataByTime(orders, timeFilter);
 
-      // Filter orders based on time period if needed
-      const filteredOrders = filterDataByTime(orders, timeFilter);
+          // Calculate basic stats
+          const revenue = filteredOrders.reduce((sum, order) => sum + order.totalPrice, 0);
+          const pendingOrders = filteredOrders.filter(order => order.status.toLowerCase() === 'pending').length;
+          const processingOrders = filteredOrders.filter(order => order.status.toLowerCase() === 'processing').length;
+          const shippedOrders = filteredOrders.filter(order => order.status.toLowerCase() === 'shipped').length;
+          const deliveredOrders = filteredOrders.filter(order => order.status.toLowerCase() === 'delivered').length;
+          const totalStock = products.reduce((sum, product) => sum + product.stock, 0);
+          const avgOrderValue = filteredOrders.length > 0 ? revenue / filteredOrders.length : 0;
 
-      // Calculate basic stats
-      const revenue = filteredOrders.reduce((sum, order) => sum + order.totalPrice, 0);
-      const pendingOrders = filteredOrders.filter(order => order.status.toLowerCase() === 'pending').length;
-      const processingOrders = filteredOrders.filter(order => order.status.toLowerCase() === 'processing').length;
-      const shippedOrders = filteredOrders.filter(order => order.status.toLowerCase() === 'shipped').length;
-      const deliveredOrders = filteredOrders.filter(order => order.status.toLowerCase() === 'delivered').length;
-      const totalStock = products.reduce((sum, product) => sum + product.stock, 0);
-      const avgOrderValue = filteredOrders.length > 0 ? revenue / filteredOrders.length : 0;
+          // Get recent orders and top products
+          const recent = [...filteredOrders]
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, 5);
 
-      // Get recent orders and top products
-      const recent = [...filteredOrders]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 5);
+          // Sort products by stock level (could be changed to sort by popularity if that data is available)
+          const top = [...products]
+            .sort((a, b) => b.stock - a.stock)
+            .slice(0, 5);
 
-      // Sort products by stock level (could be changed to sort by popularity if that data is available)
-      const top = [...products]
-        .sort((a, b) => b.stock - a.stock)
-        .slice(0, 5);
+          // Calculate percentage changes (mock data for now, would be based on previous period in real implementation)
+          const changes = {
+            users: calculatePercentageChange(users.length, users.length - Math.floor(Math.random() * 5)),
+            products: calculatePercentageChange(products.length, products.length - Math.floor(Math.random() * 3)),
+            orders: calculatePercentageChange(filteredOrders.length, filteredOrders.length - Math.floor(Math.random() * 10)),
+            revenue: calculatePercentageChange(revenue, revenue - Math.floor(Math.random() * 1000))
+          };
 
-      // Calculate percentage changes (mock data for now, would be based on previous period in real implementation)
-      const changes = {
-        users: calculatePercentageChange(users.length, users.length - Math.floor(Math.random() * 5)),
-        products: calculatePercentageChange(products.length, products.length - Math.floor(Math.random() * 3)),
-        orders: calculatePercentageChange(filteredOrders.length, filteredOrders.length - Math.floor(Math.random() * 10)),
-        revenue: calculatePercentageChange(revenue, revenue - Math.floor(Math.random() * 1000))
-      };
+          // Prepare chart data
+          const salesChartData = prepareSalesChartData(filteredOrders);
+          const categoryChartData = prepareCategoryChartData(products, categories);
+          const orderStatusChartData = prepareOrderStatusChartData(filteredOrders);
+          const userGrowthChartData = prepareUserGrowthData(users);
 
-      // Prepare chart data
-      const salesChartData = prepareSalesChartData(filteredOrders);
-      const categoryChartData = prepareCategoryChartData(products, categories);
-      const orderStatusChartData = prepareOrderStatusChartData(filteredOrders);
-      const userGrowthChartData = prepareUserGrowthData(users);
-
-      // Update state
-      setStats({
-        users: users.length,
-        products: products.length,
-        orders: filteredOrders.length,
-        categories: categories.length,
-        revenue,
-        pendingOrders,
-        processingOrders,
-        shippedOrders,
-        deliveredOrders,
-        totalStock,
-        avgOrderValue
-      });
-      setStatsChanges(changes);
-      setRecentOrders(recent);
-      setTopProducts(top);
-      setSalesData(salesChartData);
-      setCategoryData(categoryChartData);
-      setOrderStatusData(orderStatusChartData);
-      setUserGrowthData(userGrowthChartData);
-
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [user, timeFilter]);
+          // Update state
+          setStats({
+            users: users.length,
+            products: products.length,
+            orders: filteredOrders.length,
+            categories: categories.length,
+            revenue,
+            pendingOrders,
+            processingOrders,
+            shippedOrders,
+            deliveredOrders,
+            totalStock,
+            avgOrderValue
+          });
+          setStatsChanges(changes);
+          setRecentOrders(recent);
+          setTopProducts(top);
+          setSalesData(salesChartData);
+          setCategoryData(categoryChartData);
+          setOrderStatusData(orderStatusChartData);
+          setUserGrowthData(userGrowthChartData);
+        })
+        .catch((error) => console.error("Error fetching dashboard data:", error))
+        .finally(() => {
+          setLoading(false);
+          setRefreshing(false);
+        }),
+    [user, timeFilter]
+  );
 
 
 
   // Handle time filter change
   const handleTimeFilterChange = (filter) => {
+    setLoading(true);
     setTimeFilter(filter);
   };
 
   // Refresh dashboard data
   const handleRefresh = () => {
-    fetchDashboardData(true);
+    setRefreshing(true);
+    fetchDashboardData();
   };
 
   useEffect(() => {

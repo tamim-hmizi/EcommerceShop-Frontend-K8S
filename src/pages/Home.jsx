@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import {
@@ -30,7 +30,6 @@ const Home = () => {
   const { products, loading: productsLoading } = useSelector(
     state => state.products
   );
-  const [featuredProducts, setFeaturedProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -68,23 +67,30 @@ const Home = () => {
     [dispatch, products.length]
   );
 
-  // Update featured products when products change
-  useEffect(
-    () => {
-      if (products.length > 0) {
-        // Get 4 random products as featured
-        const shuffled = [...products].sort(() => 0.5 - Math.random());
-        setFeaturedProducts(shuffled.slice(0, 4));
-      }
-    },
-    [products]
-  );
+  // Pick 4 random featured products: the seed is drawn once per mount so the
+  // selection stays stable across re-renders and only changes with products
+  const [shuffleSeed] = useState(() => Math.floor(Math.random() * 2 ** 32));
+  const featuredProducts = useMemo(() => {
+    let state = shuffleSeed;
+    const random = () => {
+      // mulberry32 pseudo-random generator
+      state = (state + 0x6d2b79f5) | 0;
+      let t = Math.imul(state ^ (state >>> 15), 1 | state);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    const shuffled = [...products];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled.slice(0, 4);
+  }, [products, shuffleSeed]);
 
   // Fetch categories
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        setLoading(true);
         const categoriesData = await getCategories();
         setCategories(categoriesData.data || []);
         console.log(

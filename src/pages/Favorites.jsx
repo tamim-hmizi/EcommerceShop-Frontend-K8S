@@ -25,6 +25,7 @@ function Favorites() {
 
   // Load product images
   useEffect(() => {
+    const createdUrls = [];
     const loadImages = async () => {
       if (favorites && favorites.length > 0) {
         setLoadingImages(true);
@@ -58,6 +59,7 @@ function Favorites() {
                       responseType: "blob",
                     });
                     const blobUrl = URL.createObjectURL(response.data);
+                    createdUrls.push(blobUrl);
                     urls[product._id] = blobUrl;
                   }
                 } else {
@@ -82,8 +84,8 @@ function Favorites() {
 
     // Cleanup function to revoke object URLs
     return () => {
-      Object.values(imageUrls).forEach(url => {
-        if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
+      createdUrls.forEach(url => {
+        URL.revokeObjectURL(url);
       });
     };
   }, [favorites]);

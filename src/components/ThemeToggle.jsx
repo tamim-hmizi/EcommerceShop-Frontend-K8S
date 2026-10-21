@@ -7,7 +7,7 @@ const ThemeToggle = ({
   className = '',
   variant = 'toggle' // 'toggle' or 'button'
 }) => {
-  const { currentTheme, toggleTheme, isDark } = useTheme();
+  const { toggleTheme, isDark } = useTheme();
 
   if (variant === 'button') {
     return (

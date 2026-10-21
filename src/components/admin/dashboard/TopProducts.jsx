@@ -9,6 +9,7 @@ const TopProducts = ({ topProducts, totalStock }) => {
 
   // Load product images
   useEffect(() => {
+    const createdUrls = [];
     const fetchImages = async () => {
       const imagePromises = topProducts.map(async (product) => {
         if (product.image) {
@@ -39,6 +40,7 @@ const TopProducts = ({ topProducts, totalStock }) => {
                   responseType: "blob",
                 });
                 const blobUrl = URL.createObjectURL(response.data);
+                createdUrls.push(blobUrl);
                 return { id: product._id, url: blobUrl };
               }
             } else {
@@ -69,8 +71,8 @@ const TopProducts = ({ topProducts, totalStock }) => {
 
     // Cleanup function to revoke object URLs
     return () => {
-      Object.values(productImages).forEach(url => {
-        if (url) URL.revokeObjectURL(url);
+      createdUrls.forEach(url => {
+        URL.revokeObjectURL(url);
       });
     };
   }, [topProducts]);
